@@ -1,0 +1,60 @@
+﻿<!DOCTYPE html>
+<html>
+
+<head>
+
+<!-- Global site tag (gtag.js) - Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=UA-98278907-1"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'UA-98278907-1');
+</script>
+
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BayesPI-BAR2 pipeline tools</title>
+  <link rel="stylesheet" href="https://stackedit.io/style.css" />
+</head>
+
+<body class="stackedit">
+  <div class="stackedit__html"><h1 id="bayespi-bar2-pipeline-tools">BayesPI-BAR2 pipeline tools</h1>
+<p>The <strong>BayesPI-BAR2</strong> package is a set of command line tools residing in the <code>python</code> folder. Run <code>python &lt;tool_name.py&gt; --help</code> command to see the full usage information for a particular tool. The purpose of each tool and the data involved in the processing are described below:</p>
+<ul>
+<li><code>differential_expression.py</code>: computes differentially expressed genes between two groups of samples, usually the patient samples and normal tissue samples. This implements a relatively simple and fast method based on Kolmogorov-Smirnov test comparing two sets of normalized RPKM values. For a more precise analysis, the <a href="http://bioconductor.org/packages/release/bioc/html/baySeq.html">baySeq</a> R package could be used instead.<br>
+<em>Input:</em> two sets of read count files from RNA-Seq experiments in the tab-delimited format<br>
+<em>Output:</em> list of differentially expressed genes</li>
+<li><code>gene_regions.py</code>: extracts gene regions based on offsets from transcription start sites.<br>
+<em>Input:</em> gene annotation GTF file<br>
+<em>Output:</em> BED file with selected regions</li>
+<li><code>intersect_vcf.py</code>: computes intersection between VCF files.<br>
+<em>Input:</em> a set of VCF files<br>
+<em>Output:</em> VCF file</li>
+<li><code>mussd.py</code>: implements the Mutation filtering based on the Space and Sample Distribution (<strong>MuSSD</strong>) algorithm which finds DNA regions that are highly mutated in multiple patients (<em>mutation blocks</em>).<br>
+<em>Input:</em> a set of VCF files with patient somatic mutations, one per patient, a BED file with regions of interest, optionally a set of VCF files with patient germline mutations<br>
+<em>Output:</em> a pair of FASTA files for each block, containing reference and alternate sequences for each patient, in the format expected by <code>bayespi_bar.py</code></li>
+<li><code>highly_mutated_blocks.py</code>: a simple method to find which blocks appear to have higher than average mutation rate, used to discard blocks with few mutations.<br>
+<em>Input:</em> output of <code>mussd.py</code><br>
+<em>Output:</em> list of highly mutated blocks</li>
+<li><code>bayespi_bar.py</code>: implements the <strong>BayesPI-BAR</strong> [3] method to compute the protein-DNA binding affinity changes due to sequence variants.<br>
+<em>Input:</em> two FASTA files with a set of paired reference and alternate sequences, as well as a folder containing PWM models in BayesPI format. The set of 1772 PWMs used in the pipeline is provided in the <code>data/pwm</code> folder<br>
+<em>Output:</em> rankings of PWMs by predicted effect size, δdbA values for all PWMs and variants</li>
+<li><code>choose_background_parameters.py</code>: selects appropriate parameters (sequence size and mutation count distribution) for the background model based on chosen foreground (i.e. patient) mutation blocks.<br>
+<em>Input:</em> output of <code>mussd.py</code> and <code>bayespi_bar.py</code>, optionally a mutation signature file or a set of background mutations to use<br>
+<em>Output:</em> Bash script which runs <code>background_affinity_changes.py</code> with chosen parameters</li>
+<li><code>background_affinity_changes.py</code>: selects random mutation blocks for the background model and computes the background model using <code>bayespi_bar.py</code>.<br>
+<em>Input:</em> BED file with regions of interest, a folder with PWM files, optionally a mutation signature file or a set of background mutations to use<br>
+<em>Output:</em> δdbA values for all PWMs and randomly generated variants (same as <code>bayespi_bar.py</code>)</li>
+<li><code>affinity_change_significance_test.py</code>: performs the Wilcoxon rank-sum testing, comparing the patient affinity changes in mutation blocks to the background model.<br>
+<em>Input:</em> a pair of outputs of <code>bayespi_bar.py</code>, for the background model and a mutation block<br>
+<em>Output:</em> a table of PWMs which are affected in the foreground block significantly more than expected according to the background model</li>
+<li><code>plot_result.py</code>: produces heatmaps displaying predicted affinity changes across transcription factors and patient samples.<br>
+<em>Input:</em> output of <code>affinity_change_significance_test.py</code> and <code>bayespi_bar.py</code><br>
+<em>Output:</em> PNG file</li>
+</ul>
+</div>
+</body>
+
+</html>
